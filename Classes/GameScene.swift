@@ -22,20 +22,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Public
     var gameScore: CGFloat!
     var avatarImage: UIImage!
-    
+    var goodEmojiImage: UIImage!
+    var badEmojiImage: UIImage!
+    var intervalForEvilNodeImpulse: TimeInterval!
     // Parameters
-    let goodEmojiImage = #imageLiteral(resourceName: "goodEmoji")
-    let badEmojiImage = #imageLiteral(resourceName: "badEmoji")
     private let nodeCategories = NodeCategories()
-    private let intervalForEvilNodeImpulse = TimeInterval(exactly: 10)!
-    lazy var emojiSize: CGFloat = { return self.view!.frame.size.width / 10 }()
-    lazy var emojiNodeSize: CGFloat = { return self.view!.frame.size.width / 6 / 2 }()
+    private lazy var emojiSize: CGFloat = { return self.view!.frame.size.width / 10 }()
+    private lazy var emojiNodeSize: CGFloat = { return self.view!.frame.size.width / 6 / 2 }()
     private let backgroundColorForScene = UIColor.red
     private let backgroundColorForAngelNode = UIColor.yellow
     private let backgroundColorForEvilNode = UIColor.blue
-    lazy var playerRadius: CGFloat = { return (self.view!.frame.size.width / 3) / 2 }()
-    var goodNode: SKShapeNode!
-    var evilNode: SKShapeNode!
+    private lazy var playerRadius: CGFloat = { return (self.view!.frame.size.width / 3) / 2 }()
+    private var goodNode: SKShapeNode!
+    private var evilNode: SKShapeNode!
     
     var isFingerOnPaddle = false
     

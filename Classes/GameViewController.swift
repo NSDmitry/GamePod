@@ -12,8 +12,12 @@ import GameplayKit
 
 open class GameViewController: UIViewController {
     
-    open var gameScore: CGFloat!
-    open var avatarImage: UIImage!
+    public var gameSettings = GameSettings(
+        playerImage: UIImage(),
+        goodNodeImage: UIImage(),
+        evilNodeImage: UIImage(),
+        timeInterval: TimeInterval(),
+        score: GameScore(score: 30))
     
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -24,8 +28,12 @@ open class GameViewController: UIViewController {
         super.viewWillAppear(animated)
         
         let scene = GameScene(size: view.bounds.size)
-        scene.gameScore = gameScore
-        scene.avatarImage = avatarImage
+        scene.gameScore = CGFloat(gameSettings.score.score)
+        scene.goodEmojiImage = gameSettings.goodNodeImage
+        scene.badEmojiImage = gameSettings.evilNodeImage
+        scene.intervalForEvilNodeImpulse = gameSettings.timeInterval
+        scene.avatarImage = gameSettings.playerImage
+        
         let skView = view as! SKView
         skView.showsFPS = true
         scene.scaleMode = .resizeFill
@@ -54,8 +62,4 @@ open class GameViewController: UIViewController {
     override open var prefersStatusBarHidden: Bool {
         return true
     }
-}
-
-public protocol setupGameScene {
-    func setupSceneWidthScore(_ score: CGFloat, playerImage: UIImage) -> ()
 }
