@@ -19,15 +19,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let goodEmodjiCategory : UInt32 = 0x1 << 4
     }
     
+    // Public
+    var gameScore: CGFloat!
+    var avatarImage: UIImage!
+    
     // Parameters
-    let avatarImage = #imageLiteral(resourceName: "avatar")
     let goodEmojiImage = #imageLiteral(resourceName: "goodEmoji")
     let badEmojiImage = #imageLiteral(resourceName: "badEmoji")
     private let nodeCategories = NodeCategories()
     private let intervalForEvilNodeImpulse = TimeInterval(exactly: 10)!
     lazy var emojiSize: CGFloat = { return self.view!.frame.size.width / 10 }()
     lazy var emojiNodeSize: CGFloat = { return self.view!.frame.size.width / 6 / 2 }()
-    private let gameScore: CGFloat = 100
     private let backgroundColorForScene = UIColor.red
     private let backgroundColorForAngelNode = UIColor.yellow
     private let backgroundColorForEvilNode = UIColor.blue
@@ -37,7 +39,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var isFingerOnPaddle = false
     
-    override open func didMove(to view: SKView) {
+    override func didMove(to view: SKView) {
         setupPhysicalWorld()
         setupPlayerNode()
         setupEvilNode()
@@ -178,7 +180,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var touchLocation = CGPoint()
     var touching = false
     
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
             let nodes = self.nodes(at: location)
@@ -186,11 +188,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             for node in nodes {
                 if node.name == "goodEmojiNode" {
-                    if #available(iOS 10.0, *) {
-                        impulseNode(goodNode, to: evilNode)
-                    } else {
-                        // Fallback on earlier versions
-                    }
+                    impulseNode(goodNode, to: evilNode)
                     break
                 }
                 
@@ -208,7 +206,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override open func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first!
         let location = touch.location(in: self)
         touchLocation = location
@@ -222,7 +220,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override open func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         touching = false
         let node = self.childNode(withName: "goodNode")!
         let touch = touches.first!
@@ -234,7 +232,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         node.physicsBody?.applyImpulse(distance)
     }
     
-    override open func update(_ currentTime: TimeInterval) {
+    override func update(_ currentTime: TimeInterval) {
         let node = self.childNode(withName: "goodNode")!
         if touching {
             let dt: CGFloat = 1 / 60
@@ -258,14 +256,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     @objc private func impulseEvilNode() {
-        if #available(iOS 10.0, *) {
-            impulseNode(evilNode, to: goodNode)
-        } else {
-            // Fallback on earlier versions
-        }
+        impulseNode(evilNode, to: goodNode)
     }
     
-    @available(iOS 10.0, *)
     private func impulseNode(_ nodeA: SKNode, to nodeB: SKNode) {
         if !isFingerOnPaddle {
             let scale = SKAction.scale(by: 1.2, duration: 0.2)
