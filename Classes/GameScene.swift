@@ -188,7 +188,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             for node in nodes {
                 if node.name == "goodEmojiNode" {
-                    impulseNode(goodNode, to: evilNode)
+                    if #available(iOS 10.0, *) {
+                        impulseNode(goodNode, to: evilNode)
+                    }
                     break
                 }
                 
@@ -256,9 +258,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     @objc private func impulseEvilNode() {
-        impulseNode(evilNode, to: goodNode)
+        if #available(iOS 10.0, *) {
+            impulseNode(evilNode, to: goodNode)
+        }
     }
     
+    @available(iOS 10.0, *)
     private func impulseNode(_ nodeA: SKNode, to nodeB: SKNode) {
         if !isFingerOnPaddle {
             let scale = SKAction.scale(by: 1.2, duration: 0.2)

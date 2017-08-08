@@ -10,17 +10,17 @@ import UIKit
 import SpriteKit
 import GameplayKit
 
-class GameViewController: UIViewController {
+open class GameViewController: UIViewController {
     
-    var gameScore: CGFloat!
-    var avatarImage: UIImage!
+    open var gameScore: CGFloat!
+    open var avatarImage: UIImage!
     
-    override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         
     }
     
-    override func viewWillAppear(_ animated: Bool) {
+    override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         let scene = GameScene(size: view.bounds.size)
@@ -34,11 +34,11 @@ class GameViewController: UIViewController {
         
     }
     
-    override var shouldAutorotate: Bool {
+    override open var shouldAutorotate: Bool {
         return true
     }
     
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UIDevice.current.userInterfaceIdiom == .phone {
             return .allButUpsideDown
         } else {
@@ -46,16 +46,16 @@ class GameViewController: UIViewController {
         }
     }
     
-    override func didReceiveMemoryWarning() {
+    override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
     }
     
-    override var prefersStatusBarHidden: Bool {
+    override open var prefersStatusBarHidden: Bool {
         return true
     }
 }
 
-protocol setupGameScene {
+public protocol setupGameScene {
     func setupSceneWidthScore(_ score: CGFloat, playerImage: UIImage) -> ()
 }
