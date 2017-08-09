@@ -17,6 +17,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let evilCategory: UInt32 = 0x1 << 2
         let goodCategory : UInt32 = 0x1 << 3
         let goodEmodjiCategory : UInt32 = 0x1 << 4
+        let physicalWorldCategory: UInt32 = 0x1 << 5
     }
     
     // Public
@@ -69,16 +70,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.physicsBody = physicsBody
         self.physicsBody!.friction = 0.3
         self.name = "sceneBody"
-        self.physicsBody?.categoryBitMask = nodeCategories.goodCategory
+        self.physicsBody?.categoryBitMask = nodeCategories.physicalWorldCategory
         self.physicsBody?.collisionBitMask = nodeCategories.evilCategory
-        self.physicsBody?.contactTestBitMask = nodeCategories.playerCategory
+        self.physicsBody?.contactTestBitMask = nodeCategories.evilCategory
         
         // Gravity in center
         let gravityField = SKFieldNode.radialGravityField()
         gravityField.position.x = self.size.width / 2
         gravityField.position.y = self.size.height / 2
-        gravityField.strength = 30
-        gravityField.minimumRadius = 600
+        gravityField.strength = 300
+        gravityField.minimumRadius = 1000
         gravityField.physicsBody?.friction = 0.1
         addChild(gravityField)
         
@@ -114,10 +115,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         evilNode.strokeColor = backgroundColorForEvilNode
         evilNode.physicsBody = SKPhysicsBody(circleOfRadius: evilNodeRadius)
         evilNode.physicsBody?.categoryBitMask = nodeCategories.evilCategory
-        evilNode.physicsBody?.collisionBitMask = nodeCategories.goodCategory
-        evilNode.physicsBody?.contactTestBitMask = nodeCategories.goodCategory
-        evilNode.physicsBody?.linearDamping = 0.7
-        evilNode.physicsBody?.friction = 0.9
+        evilNode.physicsBody?.collisionBitMask = nodeCategories.goodCategory | nodeCategories.physicalWorldCategory
+        evilNode.physicsBody?.contactTestBitMask = nodeCategories.goodCategory | nodeCategories.physicalWorldCategory
+        evilNode.physicsBody?.linearDamping = 0.1
+        evilNode.physicsBody?.friction = 0.1
         evilNode.physicsBody?.allowsRotation = false
         evilNode.physicsBody?.restitution = 0.1
         
@@ -145,8 +146,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         goodBody.categoryBitMask = nodeCategories.goodCategory
         goodBody.collisionBitMask = nodeCategories.evilCategory
         goodBody.contactTestBitMask = nodeCategories.evilCategory
-        goodBody.linearDamping = 0.1
-        goodBody.friction = 0.1
+        goodBody.linearDamping = 0.5
+        goodBody.friction = 0.5
         goodBody.allowsRotation = false
         goodNode.physicsBody = goodBody
         goodNode.zPosition = -3
@@ -178,15 +179,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.physicsWorld.add(pin)
     }
     
-    var touchLocation = CGPoint()
+    var lastTouch: CGPoint?
     var touching = false
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
             let nodes = self.nodes(at: location)
-            touchLocation = location
-            
             for node in nodes {
                 
                 if node.name == "evilNode" {
@@ -206,7 +205,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 
                 if node.name == "goodNode" {
-                    touchLocation = location
+                    lastTouch = location
                     touching = true
                     break
                 }
@@ -217,28 +216,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first!
         let location = touch.location(in: self)
-        touchLocation = location
         for node in self.nodes(at: location) {
             if node.name == "goodNode" {
                 touching = true
-                touchLocation = location
-                goodNode.position = location
                 isFingerOnPaddle = true
-                changeDynamicForNodes([goodNode], value: false)
             }
         }
+        lastTouch = location
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         touching = false
-        let touch = touches.first!
-        let location = touch.location(in: self)
-        changeDynamicForNodes([goodNode], value: true)
-        touchLocation = location
+        lastTouch = nil
         isFingerOnPaddle = false
     }
     
     override func update(_ currentTime: TimeInterval) {
+        if let touch = lastTouch {
+            let impulseVector = CGVector(
+                dx: touch.x - goodNode.position.x, 
+                dy: touch.y - goodNode.position.y)
+            
+            goodNode.physicsBody?.applyImpulse(impulseVector)
+        }
     }
     
     private func showInfoAlert() {
