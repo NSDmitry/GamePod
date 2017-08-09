@@ -67,7 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // TODO: - нужно оттестировать
         let physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
         self.physicsBody = physicsBody
-        self.physicsBody!.friction = 0.1
+        self.physicsBody!.friction = 0.3
         self.name = "sceneBody"
         self.physicsBody?.categoryBitMask = nodeCategories.goodCategory
         self.physicsBody?.collisionBitMask = nodeCategories.evilCategory
@@ -77,8 +77,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let gravityField = SKFieldNode.radialGravityField()
         gravityField.position.x = self.size.width / 2
         gravityField.position.y = self.size.height / 2
-        gravityField.strength = 150
+        gravityField.strength = 30
         gravityField.minimumRadius = 600
+        gravityField.physicsBody?.friction = 0.1
         addChild(gravityField)
         
     }
@@ -93,6 +94,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerNode.physicsBody?.categoryBitMask = nodeCategories.playerCategory
         playerNode.physicsBody?.collisionBitMask = nodeCategories.goodEmodjiCategory
         playerNode.physicsBody?.contactTestBitMask = nodeCategories.goodEmodjiCategory
+        playerNode.physicsBody?.friction = 0.7
         playerNode.physicsBody?.isDynamic = false
         let playerAvatarNode = SKShapeNode(circleOfRadius: playerRadius - 5)
         playerAvatarNode.fillTexture = SKTexture(image: avatarImage)
@@ -115,7 +117,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         evilNode.physicsBody?.collisionBitMask = nodeCategories.goodCategory
         evilNode.physicsBody?.contactTestBitMask = nodeCategories.goodCategory
         evilNode.physicsBody?.linearDamping = 0.7
-        evilNode.physicsBody?.friction = 0.1
+        evilNode.physicsBody?.friction = 0.9
         evilNode.physicsBody?.allowsRotation = false
         evilNode.physicsBody?.restitution = 0.1
         
@@ -186,6 +188,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             touchLocation = location
             
             for node in nodes {
+                
+                if node.name == "evilNode" {
+                    break
+                }
+                
                 if node.name == "goodEmojiNode" {
                     if #available(iOS 10.0, *) {
                         impulseNode(goodNode, to: evilNode)
@@ -217,31 +224,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 touchLocation = location
                 goodNode.position = location
                 isFingerOnPaddle = true
+                changeDynamicForNodes([goodNode], value: false)
             }
         }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         touching = false
-        let node = self.childNode(withName: "goodNode")!
         let touch = touches.first!
         let location = touch.location(in: self)
+        changeDynamicForNodes([goodNode], value: true)
         touchLocation = location
         isFingerOnPaddle = false
-        let distance = CGVector(dx: touchLocation.x - node.position.x,
-                                dy: touchLocation.y - node.position.y)
-        node.physicsBody?.applyImpulse(distance)
     }
     
     override func update(_ currentTime: TimeInterval) {
-        let node = self.childNode(withName: "goodNode")!
-        if touching {
-            let dt: CGFloat = 1 / 60
-            let distance = CGVector(dx: touchLocation.x - node.position.x,
-                                    dy: touchLocation.y - node.position.y)
-            let velocity = CGVector(dx: distance.dx / dt, dy: distance.dy / dt)
-            node.physicsBody?.velocity = velocity
-        }
     }
     
     private func showInfoAlert() {
@@ -253,7 +250,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func changeDynamicForNodes(_ nodes: [SKNode], value: Bool) {
-        nodes.forEach { $0.physicsBody!.isDynamic = value }
+        nodes.forEach {  $0.physicsBody!.isDynamic = value }
     }
     
     @objc private func impulseEvilNode() {
@@ -267,10 +264,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if !isFingerOnPaddle {
             let scale = SKAction.scale(by: 1.2, duration: 0.2)
             let reScale = SKAction.scale(to: nodeA.frame.size, duration: 0.2)
-            nodeA.run(scale, completion: { _ in
+            nodeA.run(scale, completion: { _ in 
+                let playerNode = self.childNode(withName: "playerNode")!
                 let impulseVector = CGVector(
-                    dx: nodeB.position.x - nodeA.position.x,
-                    dy: nodeB.position.y - nodeB.position.y)
+                    dx: playerNode.position.x - nodeA.position.x,
+                    dy: playerNode.position.y - nodeA.position.y)
                 nodeA.physicsBody?.applyImpulse(impulseVector)
                 nodeA.run(reScale)
             })
