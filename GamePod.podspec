@@ -103,10 +103,11 @@ Pod::Spec.new do |s|
   #  non-essential files like tests, examples and documentation.
   #
 
-  s.resources = "Resources/GamePod.xcassets"
+  # s.resources = "Resources/GamePod.xcassets"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
 
+  s.ios.resource_bundle = {'GamePod' => 'Resources/*.png'}
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
