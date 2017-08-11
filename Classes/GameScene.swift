@@ -115,8 +115,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         evilNode.strokeColor = backgroundColorForEvilNode
         evilNode.physicsBody = SKPhysicsBody(circleOfRadius: evilNodeRadius)
         evilNode.physicsBody?.categoryBitMask = nodeCategories.evilCategory
-        evilNode.physicsBody?.collisionBitMask = nodeCategories.goodCategory | nodeCategories.physicalWorldCategory
-        evilNode.physicsBody?.contactTestBitMask = nodeCategories.goodCategory | nodeCategories.physicalWorldCategory
+        evilNode.physicsBody?.collisionBitMask = nodeCategories.goodCategory
+        evilNode.physicsBody?.contactTestBitMask = nodeCategories.goodCategory
+        
         evilNode.physicsBody?.linearDamping = 0.1
         evilNode.physicsBody?.friction = 0.1
         evilNode.physicsBody?.allowsRotation = false
