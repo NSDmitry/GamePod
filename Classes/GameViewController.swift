@@ -8,21 +8,15 @@
 
 import UIKit
 import SpriteKit
-import GameplayKit
 
 open class GameViewController: UIViewController {
     
     public var gameSettings = GameSettings(
-        playerImage: UIImage(),
-        goodNodeImage: UIImage(),
-        evilNodeImage: UIImage(),
-        timeInterval: TimeInterval(),
-        score: GameScore(score: 30))
-    
-    override open func viewDidLoad() {
-        super.viewDidLoad()
-        
-    }
+        playerImage: #imageLiteral(resourceName: <#T##String#>)(),
+        goodNodeImage: #imageLiteral(resourceName: "goodEmoji"),
+        evilNodeImage: #imageLiteral(resourceName: "badEmoji"),
+        timeInterval: TimeInterval(exactly: 15)!,
+        score: GameScore(score: 100))
     
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -35,31 +29,11 @@ open class GameViewController: UIViewController {
         scene.avatarImage = gameSettings.playerImage
         
         let skView = view as! SKView
-        skView.showsFPS = true
+//        skView.showsFPS = true
         scene.scaleMode = .resizeFill
         scene.physicsWorld.gravity = CGVector(dx: 0.0, dy: -0.1)
         skView.presentScene(scene)
         
     }
-    
-    override open var shouldAutorotate: Bool {
-        return true
-    }
-    
-    override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
-        } else {
-            return .all
-        }
-    }
-    
-    override open func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
-    
-    override open var prefersStatusBarHidden: Bool {
-        return true
-    }
+
 }
