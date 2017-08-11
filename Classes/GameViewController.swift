@@ -12,11 +12,11 @@ import SpriteKit
 open class GameViewController: UIViewController {
     
     public var gameSettings = GameSettings(
-        playerImage: #imageLiteral(resourceName: "emptyavatar"),
-        goodNodeImage: ,
-        evilNodeImage: #imageLiteral(resourceName: "badEmoji"),
+        playerImage: UIImage.make(name: "emptyavatar")!,
+        goodNodeImage: UIImage.make(name: "goodEmoji")!,
+        evilNodeImage: UIImage.make(name: "badEmoji")!,
         timeInterval: TimeInterval(exactly: 15)!,
-//        score: GameScore(score: 100))
+        score: GameScore(score: 100))
     
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
