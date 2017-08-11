@@ -66,8 +66,8 @@ Pod::Spec.new do |s|
   s.platform     = :ios
 
   #  When using multiple platforms
-  # s.ios.deployment_target = "5.0"
-  s.osx.deployment_target = "0.0"
+  s.ios.deployment_target = "9.0"
+  # s.osx.deployment_target = "0.0"
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
@@ -103,7 +103,7 @@ Pod::Spec.new do |s|
   #  non-essential files like tests, examples and documentation.
   #
 
-  # s.resources = "Resources/*.png"
+  s.resources = "Resources/*.png"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
 
@@ -114,7 +114,7 @@ Pod::Spec.new do |s|
   #  the lib prefix of their name.
   #
 
-  # s.frameworks = "SpriteKit", "UIKit"
+  s.frameworks = "SpriteKit", "UIKit"
 
   # s.library   = "iconv"
   # s.libraries = "iconv", "xml2"
