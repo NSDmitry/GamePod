@@ -30,7 +30,7 @@ open class GameViewController: UIViewController, GameDelegate {
         
         let skView = view as! SKView
         scene.scaleMode = .resizeFill
-        scene.physicsWorld.gravity = CGVector(dx: 0.0, dy: -0.1)
+        scene.physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         skView.presentScene(scene)
     }
     

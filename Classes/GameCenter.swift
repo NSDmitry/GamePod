@@ -15,6 +15,7 @@ struct NodesWidth {
 }
 
 class NodeSizer {
+    
     static func calculateSizesWidthScore(viewWidth: CGFloat, score: CGFloat) -> NodesWidth {
         let viewWidth: CGFloat = viewWidth
         
@@ -35,7 +36,7 @@ class NodeSizer {
         }
         
         if score == 100 {
-            angelWidth = viewWidth
+            angelWidth = viewWidth * 1.25
             evilWidth = defaultWidthForNode
         }
         
