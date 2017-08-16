@@ -21,8 +21,8 @@ class GameScene: SKScene {
     private struct NodeCategories {
         let playerCategory: UInt32 = 0x1 << 1
         let evilCategory: UInt32 = 0x1 << 2
-        let goodCategory : UInt32 = 0x1 << 3
-        let goodEmodjiCategory : UInt32 = 0x1 << 4
+        let goodCategory: UInt32 = 0x1 << 3
+        let goodEmodjiCategory: UInt32 = 0x1 << 4
         let physicalWorldCategory: UInt32 = 0x1 << 5
     }
     
@@ -36,12 +36,12 @@ class GameScene: SKScene {
     var intervalForEvilNodeImpulse: TimeInterval!
     // Parameters
     private let nodeCategories = NodeCategories()
-    private lazy var emojiSize: CGFloat = { return self.size.width / 10 }()
-    private lazy var emojiNodeSize: CGFloat = { return self.size.width / 6 / 2 }()
+    private lazy var emojiSize: CGFloat = { self.size.width / 10 }()
+    private lazy var emojiNodeSize: CGFloat = { self.size.width / 6 / 2 }()
     private let backgroundColorForScene = SKColor.black
-    private let backgroundColorForAngelNode = UIColor(red:0.92, green:0.14, blue:0.16, alpha:1.0)
-    private let backgroundColorForEvilNode = UIColor(red:0.68, green:0.31, blue:0.75, alpha:1.0)
-    private lazy var playerRadius: CGFloat = { return (self.size.width / 3) / 2 }()
+    private let backgroundColorForAngelNode = UIColor(red: 0.92, green: 0.14, blue: 0.16, alpha: 1.0)
+    private let backgroundColorForEvilNode = UIColor(red: 0.68, green: 0.31, blue: 0.75, alpha: 1.0)
+    private lazy var playerRadius: CGFloat = { (self.size.width / 3) / 2 }()
     private var goodNode: SKShapeNode!
     private var evilNode: SKShapeNode!
     private var playerNode: SKShapeNode!
@@ -49,7 +49,7 @@ class GameScene: SKScene {
     
     var isFingerOnPaddle = false
     
-    override func didMove(to view: SKView) {
+    override func didMove(to _: SKView) {
         setupPhysicalWorld()
         setupPlayerNode()
         setupEvilNode()
@@ -57,29 +57,36 @@ class GameScene: SKScene {
         setupStartAnimations()
     }
     
-    private func setupStartAnimations() {        
-        startAnimate(nodes: [evilNode, playerNode, goodNode, goodEmojiNode], completion: {
-            print("Привет")
+    private func setupStartAnimations() {
+        startAnimate(nodes: [evilNode, playerNode, goodNode, goodEmojiNode])
+    }
+    
+    private func startAnimate(nodes: [SKNode]) {
+        let showAnimation = SKAction.fadeAlpha(by: 1.0, duration: 0.5)
+        let rescaleAnimation = SKAction.scale(to: 1.0, duration: 0.5)
+        evilNode.run(rescaleAnimation)
+        evilNode.run(showAnimation, completion: {
+            self.playerNode.run(rescaleAnimation)
+            self.playerNode.run(showAnimation, completion: {
+                self.goodEmojiNode.run(rescaleAnimation)
+                self.goodEmojiNode.run(showAnimation, completion: { _ in })
+                self.goodNode.run(showAnimation, completion: { self.setSizeForNodes() })
+            })
         })
     }
     
-    private func startAnimate(nodes: [SKNode], completion: @escaping ()->()) {
-        let showAnimation = SKAction.fadeAlpha(by: 1.0, duration: 0.5)
-        let scaleAnimation = SKAction.scale(to: 1.0, duration: 0.5)
-        nodes.forEach { node in 
-            node.setScale(0.1)
-            node.run(showAnimation)
-            node.run(scaleAnimation)
-            node.physicsBody?.isDynamic = true
+    private func setSizeForNodes() {
+        let nodes = [evilNode, playerNode, goodNode]
+        nodes.forEach { 
+            $0?.physicsBody?.isDynamic = true
         }
-        animateSize()
     }
     
     private func sceneSettings() {
         self.backgroundColor = backgroundColorForScene
     }
     
-    private func setupPhysicalWorld() {        
+    private func setupPhysicalWorld() {
         let gravityField = SKFieldNode.radialGravityField()
         gravityField.position.x = self.size.width / 2
         gravityField.position.y = self.size.height / 2
@@ -104,6 +111,8 @@ class GameScene: SKScene {
         playerNode.physicsBody?.isDynamic = false
         playerNode.physicsBody?.pinned = true
         playerNode.alpha = 0
+        playerNode.setScale(0.1)
+        
         let playerAvatarNode = SKShapeNode(circleOfRadius: playerRadius - 5)
         playerAvatarNode.fillTexture = SKTexture(image: avatarImage)
         playerAvatarNode.fillColor = .white
@@ -129,12 +138,16 @@ class GameScene: SKScene {
         evilNode.physicsBody?.restitution = 0.1
         evilNode.physicsBody?.isDynamic = false
         evilNode.alpha = 0
+        evilNode.zPosition = -3
+        evilNode.setScale(0.1)
         
         let evilEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         evilEmojiNode.fillColor = .white
         
-        let evilEmojiSprite = SKSpriteNode(texture: SKTexture(image: badEmojiImage),
-                                           size: CGSize(width: emojiSize, height: emojiSize))
+        let evilEmojiSprite = SKSpriteNode(
+            texture: SKTexture(image: badEmojiImage),
+            size: CGSize(width: emojiSize, height: emojiSize)
+        )
         
         evilNode.addChild(evilEmojiNode)
         evilEmojiNode.addChild(evilEmojiSprite)
@@ -142,7 +155,7 @@ class GameScene: SKScene {
     }
     
     private func setupGoodNode() {
-        let goodNodeRadius = self.frame.width / 10
+        let goodNodeRadius = self.frame.width / 10 
         
         goodNode = SKShapeNode(circleOfRadius: goodNodeRadius)
         goodNode.name = "goodNode"
@@ -161,30 +174,37 @@ class GameScene: SKScene {
         goodNode.physicsBody = goodBody
         goodNode.zPosition = -3
         goodNode.alpha = 0
+        goodNode.setScale(0.1)
         
         self.addChild(goodNode)
         
         goodEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         goodEmojiNode.position = goodNode.position
-        let goodEmodjiBody  = SKPhysicsBody(circleOfRadius: emojiNodeSize + 5)
+        let goodEmodjiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 5)
         goodEmodjiBody.categoryBitMask = nodeCategories.goodEmodjiCategory
         goodEmodjiBody.collisionBitMask = nodeCategories.playerCategory
         goodEmodjiBody.contactTestBitMask = nodeCategories.playerCategory
         goodEmodjiBody.allowsRotation = false
         goodEmojiNode.physicsBody = goodEmodjiBody
         goodEmojiNode.alpha = 0
+        goodEmojiNode.setScale(0.1)
         
         goodEmojiNode.fillColor = .white
         goodEmojiNode.name = "goodEmojiNode"
         
-        let goodEmojiSprite = SKSpriteNode(texture: SKTexture(image: goodEmojiImage),
-                                           size: CGSize(width: emojiSize, height: emojiSize))
+        let goodEmojiSprite = SKSpriteNode(
+            texture: SKTexture(image: goodEmojiImage),
+            size: CGSize(width: emojiSize, height: emojiSize)
+        )
         
         goodEmojiNode.addChild(goodEmojiSprite)
         self.addChild(goodEmojiNode)
         
-        let pin = SKPhysicsJointPin.joint(withBodyA: goodBody, bodyB: goodEmodjiBody,
-                                          anchor: goodNode.position)
+        let pin = SKPhysicsJointPin.joint(
+            withBodyA: goodBody,
+            bodyB: goodEmodjiBody,
+            anchor: goodNode.position
+        )
         self.physicsWorld.add(pin)
-    }    
+    }
 }
