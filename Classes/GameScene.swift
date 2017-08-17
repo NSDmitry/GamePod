@@ -58,9 +58,12 @@ class GameScene: SKScene {
     }
     
     private func setupStartAnimations() {
-        startAnimate(nodes: [evilNode, playerNode, goodNode, goodEmojiNode])
+        if #available(iOS 10.0, *) {
+            startAnimate(nodes: [evilNode, playerNode, goodNode, goodEmojiNode])
+        }
     }
     
+    @available(iOS 10.0, *)
     private func startAnimate(nodes: [SKNode]) {
         let showAnimation = SKAction.fadeAlpha(by: 1.0, duration: 0.5)
         let rescaleAnimation = SKAction.scale(to: 1.0, duration: 0.5)
@@ -70,13 +73,31 @@ class GameScene: SKScene {
             self.playerNode.run(showAnimation, completion: {
                 self.goodEmojiNode.run(rescaleAnimation)
                 self.goodEmojiNode.run(showAnimation, completion: { _ in })
-                self.goodNode.run(showAnimation, completion: { self.setSizeForNodes() })
+                self.goodNode.run(showAnimation, completion: { if 
+                    #available(iOS 10.0, *) {
+                        self.setSizeForNodes()
+                    }
+                })
             })
         })
     }
     
+    @available(iOS 10.0, *)
     private func setSizeForNodes() {
         let nodes = [evilNode, playerNode, goodNode]
+        if #available(iOS 10.0, *) {
+            let scaleAction = SKAction.scale(
+                to: CGSize(width: self.frame.width / 10,
+                           height: self.frame.width / 10), 
+                duration: 0.5
+            )
+            
+            let rescaleAction = SKAction.scale(to: 1.0, duration: 0.5)
+            goodNode.run(scaleAction, completion: {
+                self.goodNode.run(rescaleAction)
+            })
+        } 
+        
         nodes.forEach { 
             $0?.physicsBody?.isDynamic = true
         }
@@ -155,7 +176,7 @@ class GameScene: SKScene {
     }
     
     private func setupGoodNode() {
-        let goodNodeRadius = self.frame.width / 10 
+        let goodNodeRadius = self.frame.width * 1.25 / 2 / 2
         
         goodNode = SKShapeNode(circleOfRadius: goodNodeRadius)
         goodNode.name = "goodNode"
