@@ -21,11 +21,8 @@ class NodeSizer {
         
         let defaultWidthForNode: CGFloat = 70
         
-        var angelWidth = defaultWidthForNode
-        var evilWidth = defaultWidthForNode
-        
-        evilWidth = viewWidth * ((100 - score) / 100)
-        angelWidth = viewWidth * (score / 100)
+        var angelWidth = (viewWidth * 1.25) * (score / 100)
+        var evilWidth = (viewWidth * 1.25) * ((100 - score) / 100)
         
         if evilWidth <= 40 {
             evilWidth += defaultWidthForNode
@@ -42,7 +39,7 @@ class NodeSizer {
         
         if score == 0 {
             angelWidth = defaultWidthForNode
-            evilWidth = viewWidth - 5
+            evilWidth = (viewWidth - 5) * 1.25 
         }
         
         return NodesWidth(angelWidth: angelWidth, evilWidth: evilWidth)

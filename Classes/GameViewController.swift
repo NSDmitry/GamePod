@@ -34,7 +34,6 @@ open class GameViewController: UIViewController, GameDelegate {
         skView.presentScene(scene)
     }
     
-    open func didTapEvilNode() { }
     open func didTapPlayerNode() { }
-    open func didTapGoodNode() { }
+    open func didTapInEmptyPlace() { }
 }
