@@ -19,22 +19,22 @@ class NodeSizer {
     static func calculateSizesWidthScore(viewWidth: CGFloat, score: CGFloat) -> NodesWidth {
         let viewWidth: CGFloat = viewWidth
         
-        let defaultWidthForNode: CGFloat = 70
+        let defaultWidthForNode: CGFloat = viewWidth / 5.3
         
         var angelWidth = (viewWidth * 1.25) * (score / 100)
         var evilWidth = (viewWidth * 1.25) * ((100 - score) / 100)
         
-        if evilWidth <= 40 {
-            evilWidth += defaultWidthForNode
+        if evilWidth <= (viewWidth * 1.25) / 10 + 8 {
+            evilWidth += (viewWidth * 1.25) / 10 + 8
         }
         
-        if angelWidth <= 40 {
-            angelWidth += defaultWidthForNode
+        if angelWidth <= (viewWidth * 1.25) / 10 + 8 {
+            angelWidth += (viewWidth * 1.25) / 10 + 8
         }
         
         if score == 100 {
             angelWidth = viewWidth * 1.25
-            evilWidth = defaultWidthForNode
+            evilWidth = defaultWidthForNode - 5
         }
         
         if score == 0 {

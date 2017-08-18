@@ -15,7 +15,7 @@ open class GameViewController: UIViewController, GameDelegate {
         goodNodeImage: UIImage.make(name: "goodEmoji")!,
         evilNodeImage: UIImage.make(name: "badEmoji")!,
         timeInterval: TimeInterval(exactly: 15)!,
-        score: GameScore(score: 100))
+        score: GameScore(score: 10))
     
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
