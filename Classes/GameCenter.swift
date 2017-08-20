@@ -45,5 +45,3 @@ class NodeSizer {
         return NodesWidth(angelWidth: angelWidth, evilWidth: evilWidth)
     }
 }
-
-

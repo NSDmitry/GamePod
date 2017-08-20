@@ -16,5 +16,3 @@ public struct GameSettings {
     public var timeInterval: TimeInterval
     public var score: GameScore
 }
-
-

@@ -10,20 +10,7 @@ import SpriteKit
 import GameplayKit
 import Foundation
 
-public protocol GameDelegate: class {
-    func didTapInEmptyPlace()
-    func didTapPlayerNode()
-}
-
-fileprivate struct PhysicsCategory {
-    let playerCategory: UInt32 = 0x1 << 1
-    let evilCategory: UInt32 = 0x1 << 2
-    let goodCategory: UInt32 = 0x1 << 3
-    let goodEmojiCategory: UInt32 = 0x1 << 4
-    let physicalWorldCategory: UInt32 = 0x1 << 5
-}
-
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     weak var gameDelegate: GameDelegate?
     
@@ -38,8 +25,8 @@ class GameScene: SKScene {
     private lazy var emojiSize: CGFloat = { self.size.width / 10 }()
     private lazy var emojiNodeSize: CGFloat = { self.size.width / 6 / 2 }()
     private let backgroundColorForScene = SKColor.clear
-    private let backgroundColorForAngelNode = UIColor(red: 0.92, green: 0.14, blue: 0.16, alpha: 1.0)
-    private let backgroundColorForEvilNode = UIColor(red: 0.68, green: 0.31, blue: 0.75, alpha: 1.0)
+    private let goodNodeColor = UIColor.goodNode
+    private let evilNodeColor = UIColor.evilNode
     private lazy var playerRadius: CGFloat = { (self.size.width / 3) / 2 }()
     private var goodNode: SKShapeNode!
     private var evilNode: SKShapeNode!
@@ -181,8 +168,8 @@ class GameScene: SKScene {
         self.evilNode = SKShapeNode(circleOfRadius: evilNodeRadius)
         evilNode.position = CGPoint(x: self.frame.midX - 120, y: self.frame.midY)
         evilNode.name = "evilNode"
-        evilNode.fillColor = backgroundColorForEvilNode
-        evilNode.strokeColor = backgroundColorForEvilNode
+        evilNode.fillColor = evilNodeColor
+        evilNode.strokeColor = evilNodeColor
         evilNode.physicsBody = SKPhysicsBody(circleOfRadius: evilNodeRadius)
         evilNode.physicsBody?.categoryBitMask = physicsCategory.evilCategory
         evilNode.physicsBody?.collisionBitMask = physicsCategory.goodCategory
@@ -198,13 +185,14 @@ class GameScene: SKScene {
         evilEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         evilEmojiNode.position = evilNode.position
         evilEmojiNode.lineWidth = 5
-        evilEmojiNode.strokeColor = backgroundColorForEvilNode
-        let evilEmojiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize)
+        evilEmojiNode.strokeColor = evilNodeColor
+        let evilEmojiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 5)
         evilEmojiBody.allowsRotation = false
         evilEmojiNode.physicsBody = evilEmojiBody
         evilEmojiNode.alpha = 0
         evilEmojiNode.setScale(0)
         evilEmojiNode.zPosition = -3
+        evilEmojiBody.restitution = 0.5
         
         evilEmojiNode.fillColor = .white
         evilEmojiNode.alpha = 0
@@ -238,8 +226,8 @@ class GameScene: SKScene {
         goodNode = SKShapeNode(circleOfRadius: goodNodeRadius)
         goodNode.name = "goodNode"
         goodNode.position = CGPoint(x: self.frame.midX + 120, y: self.frame.midY)
-        goodNode.fillColor = backgroundColorForAngelNode
-        goodNode.strokeColor = backgroundColorForAngelNode
+        goodNode.fillColor = goodNodeColor
+        goodNode.strokeColor = goodNodeColor
         let goodBody = SKPhysicsBody(circleOfRadius: goodNodeRadius)
         goodBody.categoryBitMask = physicsCategory.goodCategory
         goodBody.collisionBitMask = physicsCategory.evilCategory
@@ -256,7 +244,7 @@ class GameScene: SKScene {
         goodEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         goodEmojiNode.position = goodNode.position
         goodEmojiNode.lineWidth = 5
-        goodEmojiNode.strokeColor = backgroundColorForAngelNode
+        goodEmojiNode.strokeColor = goodNodeColor
         let goodEmodjiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 3)
         goodEmodjiBody.categoryBitMask = physicsCategory.goodEmojiCategory
         goodEmodjiBody.collisionBitMask = physicsCategory.playerCategory
@@ -291,8 +279,9 @@ class GameScene: SKScene {
         self.physicsWorld.add(pin)
     }
     
-    var lastTouch: CGPoint?
-    var touching = false
+    var movableNode : SKNode?
+    var ballStartX: CGFloat = 0.0
+    var ballStartY: CGFloat = 0.0
     
     override func touchesBegan(_ touches: Set<UITouch>, with _: UIEvent?) {
         for touch in touches {
@@ -302,43 +291,38 @@ class GameScene: SKScene {
             for node in nodes {
                 if node == playerNode {
                     gameDelegate?.didTapPlayerNode()
+                    break
                 }
                 
                 if node.name == goodNode.name || node.name == goodEmojiNode.name {
-                    lastTouch = location
-                    touching = true
+                    movableNode = goodNode
+                    ballStartX =  (movableNode?.position.x)! - location.x
+                    ballStartY = goodNode.position.y
+                    goodNode.physicsBody?.isDynamic  = false
                     break
                 }
             }
+            gameDelegate?.didTapInEmptyPlace()
         }
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with _: UIEvent?) {
-        let touch = touches.first!
-        let location = touch.location(in: self)
-        for node in self.nodes(at: location) {
-            if node == goodNode {
-                touching = true
-            }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first, movableNode != nil {
+            let location = touch.location(in: self)
+             movableNode!.position = CGPoint(x: max(playerNode.frame.maxX + goodEmojiNode.frame.size.width / 2, location.x + ballStartX), y: goodNode.position.y)
         }
-        lastTouch = location
     }
     
-    override func touchesEnded(_: Set<UITouch>, with _: UIEvent?) {
-        touching = false
-        lastTouch = nil
-        isFingerOnPaddle = false
+    override  func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        goodNode.physicsBody?.isDynamic = true
+        if let _ = touches.first, movableNode != nil {
+            movableNode = nil
+        }
     }
     
-    override func update(_: TimeInterval) {
-        if let touch = lastTouch {
-            let impulseVector = CGVector(
-                dx: touch.x - goodNode.position.x,
-                dy: 0
-            )
-            
-            goodNode.physicsBody?.applyImpulse(impulseVector)
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let _ = touches.first {
+            movableNode = nil
         }
     }
 }
-
