@@ -7,16 +7,9 @@
 //
 
 import Foundation
-import UIKit
-
-struct NodesWidth {
-    var angelWidth: CGFloat
-    var evilWidth: CGFloat
-}
 
 class NodeSizer {
-    
-    static func calculateSizesWidthScore(viewWidth: CGFloat, score: CGFloat) -> NodesWidth {
+    static func calculate(viewWidth: CGFloat, score: CGFloat) -> (angelRadius: CGFloat, evilRadius: CGFloat) {
         let viewWidth: CGFloat = viewWidth
         
         let defaultWidthForNode: CGFloat = viewWidth / 5.3
@@ -42,6 +35,6 @@ class NodeSizer {
             evilWidth = (viewWidth - 5) * 1.25 
         }
         
-        return NodesWidth(angelWidth: angelWidth, evilWidth: evilWidth)
+        return (angelRadius: angelWidth / 2, evilRadius: evilWidth / 2)
     }
 }

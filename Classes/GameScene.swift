@@ -39,8 +39,9 @@ public class GameScene: SKScene {
         setupPhysicalWorld()
         setupLabel()
         setupPlayerNode()
-        setupEvilNode()
-        setupGoodNode()
+        let sizes = NodeSizer.calculate(viewWidth: self.frame.width, score: settings.score.value)
+        setupEvilNode(radius: sizes.evilRadius)
+        setupGoodNode(radius: sizes.angelRadius)
         animateNodes()
     }
     
@@ -159,15 +160,13 @@ public class GameScene: SKScene {
         self.addChild(playerNode)
     }
     
-    private func setupEvilNode() {
-        let evilNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: settings.score.value).evilWidth / 2
-        
-        self.evilNode = SKShapeNode(circleOfRadius: evilNodeRadius)
+    private func setupEvilNode(radius: CGFloat) {        
+        self.evilNode = SKShapeNode(circleOfRadius: radius)
         evilNode.position = CGPoint(x: self.frame.midX - 120, y: self.frame.midY)
         evilNode.name = "evilNode"
         evilNode.fillColor = evilNodeColor
         evilNode.strokeColor = evilNodeColor
-        evilNode.physicsBody = SKPhysicsBody(circleOfRadius: evilNodeRadius)
+        evilNode.physicsBody = SKPhysicsBody(circleOfRadius: radius)
         evilNode.physicsBody?.categoryBitMask = physicsCategory.evilCategory
         evilNode.physicsBody?.collisionBitMask = physicsCategory.goodCategory
         evilNode.physicsBody?.contactTestBitMask = physicsCategory.goodCategory
@@ -216,15 +215,13 @@ public class GameScene: SKScene {
         self.physicsWorld.add(pin)
     }
     
-    private func setupGoodNode() {
-        let goodNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: settings.score.value).angelWidth / 2
-        
-        goodNode = SKShapeNode(circleOfRadius: goodNodeRadius)
+    private func setupGoodNode(radius: CGFloat) {
+        goodNode = SKShapeNode(circleOfRadius: radius)
         goodNode.name = "goodNode"
         goodNode.position = CGPoint(x: self.frame.midX + 120, y: self.frame.midY)
         goodNode.fillColor = goodNodeColor
         goodNode.strokeColor = goodNodeColor
-        let goodBody = SKPhysicsBody(circleOfRadius: goodNodeRadius)
+        let goodBody = SKPhysicsBody(circleOfRadius: radius)
         goodBody.categoryBitMask = physicsCategory.goodCategory
         goodBody.collisionBitMask = physicsCategory.evilCategory
         goodBody.contactTestBitMask = physicsCategory.evilCategory
