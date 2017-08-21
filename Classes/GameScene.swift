@@ -7,19 +7,14 @@
 //
 
 import SpriteKit
-import GameplayKit
 import Foundation
 
-class GameScene: SKScene, SKPhysicsContactDelegate {
+public class GameScene: SKScene {
     
-    weak var gameDelegate: GameDelegate?
+    weak public var gameDelegate: GameDelegate?
     
     // Public
-    var gameScore: CGFloat!
-    var avatarImage: UIImage!
-    var goodEmojiImage: UIImage!
-    var badEmojiImage: UIImage!
-    var intervalForEvilNodeImpulse: TimeInterval!
+    public var settings: GameSettings!
     // Parameters
     private let physicsCategory = PhysicsCategory()
     private lazy var emojiSize: CGFloat = { self.size.width / 10 }()
@@ -40,15 +35,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var isFingerOnPaddle = false
     
-    override func didMove(to _: SKView) {
+    override public func didMove(to _: SKView) {
         setupPhysicalWorld()
         setupLabel()
         setupPlayerNode()
         setupEvilNode()
         setupGoodNode()
         animateNodes()
-        
-        self.physicsWorld.contactDelegate = self
     }
     
     func animateNodes() {
@@ -99,7 +92,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func changePowerTitle() {
-        if powerTitleHelper < Int(gameScore) {
+        if powerTitleHelper < Int(settings.score.value) {
             powerLabel.text = "\(powerTitleHelper)%"
         } else {
             labelTimer.invalidate()
@@ -109,7 +102,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupLabel() {
-        powerLabel = SKLabelNode(text: "\(Int(gameScore!))%")
+        powerLabel = SKLabelNode(text: "\(Int(settings.score.value))%")
         powerLabel.color = UIColor.white
         powerLabel.name = "powerLabel"
         powerLabel.fontSize = 27
@@ -129,6 +122,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupPhysicalWorld() {
+        self.physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
+        
         let gravityField = SKFieldNode.radialGravityField()
         gravityField.position.x = self.size.width / 2
         gravityField.name = "gravityField"
@@ -158,14 +153,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerNode.setScale(0.1)
         
         let playerAvatarNode = SKShapeNode(circleOfRadius: playerRadius - 5)
-        playerAvatarNode.fillTexture = SKTexture(image: avatarImage)
+        playerAvatarNode.fillTexture = SKTexture(image: settings.playerImage)
         playerAvatarNode.fillColor = .white
         playerNode.addChild(playerAvatarNode)
         self.addChild(playerNode)
     }
     
     private func setupEvilNode() {
-        let evilNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: gameScore).evilWidth / 2
+        let evilNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: settings.score.value).evilWidth / 2
         
         self.evilNode = SKShapeNode(circleOfRadius: evilNodeRadius)
         evilNode.position = CGPoint(x: self.frame.midX - 120, y: self.frame.midY)
@@ -199,11 +194,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         evilEmojiNode.alpha = 0
         
         let evilEmojiSprite = SKSpriteNode(
-            texture: SKTexture(image: badEmojiImage),
+            texture: SKTexture(image: settings.evilNodeImage),
             size: CGSize(width: emojiSize, height: emojiSize)
         )
         
-        if gameScore == 50 {
+        if settings.score.value == 50 {
             evilNode.physicsBody?.mass = 2
             evilEmojiNode.physicsBody?.mass = 2
         }
@@ -222,7 +217,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupGoodNode() {
-        let goodNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: gameScore).angelWidth / 2
+        let goodNodeRadius = NodeSizer.calculateSizesWidthScore(viewWidth: self.frame.width, score: settings.score.value).angelWidth / 2
         
         goodNode = SKShapeNode(circleOfRadius: goodNodeRadius)
         goodNode.name = "goodNode"
@@ -259,11 +254,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         goodEmojiNode.name = "goodEmojiNode"
         
         let goodEmojiSprite = SKSpriteNode(
-            texture: SKTexture(image: goodEmojiImage),
+            texture: SKTexture(image: settings.goodNodeImage),
             size: CGSize(width: emojiSize, height: emojiSize)
         )
         
-        if gameScore == 50 {
+        if settings.score.value == 50 {
             goodNode.physicsBody?.mass = 2
             goodEmojiNode.physicsBody?.mass = 2
         }
@@ -284,7 +279,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var ballStartX: CGFloat = 0.0
     var ballStartY: CGFloat = 0.0
     
-    override func touchesBegan(_ touches: Set<UITouch>, with _: UIEvent?) {
+    override public func touchesBegan(_ touches: Set<UITouch>, with _: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
             let nodes = self.nodes(at: location)
@@ -305,7 +300,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with _: UIEvent?) {
+    override public func touchesMoved(_ touches: Set<UITouch>, with _: UIEvent?) {
         if let touch = touches.first, movableNode != nil {
             let location = touch.location(in: self)
             let newPostion = CGPoint(
@@ -316,21 +311,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override  func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let _ = touches.first, movableNode != nil {
             movableNode = nil
         }
     }
     
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override public func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let _ = touches.first {
             movableNode = nil
-        }
-    }
-    
-    func didBegin(_ contact: SKPhysicsContact) {
-        if contact.bodyA.node!.name == "playerNode" && contact.bodyB.node!.name == "goodEmojiNode" {
-            print("contact")
         }
     }
 }

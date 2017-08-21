@@ -10,9 +10,15 @@ import Foundation
 import UIKit
 
 public struct GameSettings {
-    public var playerImage: UIImage
-    public var goodNodeImage: UIImage
-    public var evilNodeImage: UIImage
-    public var timeInterval: TimeInterval
-    public var score: GameScore
+    var playerImage: UIImage
+    var goodNodeImage: UIImage
+    var evilNodeImage: UIImage
+    var score: GameScore
+    
+    public init(playerImage: UIImage, goodNodeImage: UIImage, evilNodeImage: UIImage, score: GameScore) {
+        self.playerImage = playerImage
+        self.goodNodeImage = goodNodeImage
+        self.evilNodeImage = evilNodeImage
+        self.score = score
+    }
 }

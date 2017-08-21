@@ -10,19 +10,19 @@ import Foundation
 import UIKit
 
 public struct GameScore {
-    public var score: CGFloat = 100
+    public var value: CGFloat = 100
     
     mutating func reduceScore() {
-        guard score > 0 else { return }
-        score -= 5
+        guard value > 0 else { return }
+        value -= 5
     }
     
     mutating func addScore() {
-        guard score >= 100 else { return }
-        score += 5
+        guard value >= 100 else { return }
+        value += 5
     }
     
-    public init(score: CGFloat) {
-        self.score = score
+    public init(value: CGFloat) {
+        self.value = value
     }
 }
