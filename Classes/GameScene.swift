@@ -47,6 +47,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupEvilNode()
         setupGoodNode()
         animateNodes()
+        
+        self.physicsWorld.contactDelegate = self
     }
     
     func animateNodes() {
@@ -129,6 +131,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupPhysicalWorld() {
         let gravityField = SKFieldNode.radialGravityField()
         gravityField.position.x = self.size.width / 2
+        gravityField.name = "gravityField"
         gravityField.position.y = self.size.height / 2
         gravityField.strength = 100
         gravityField.minimumRadius = 1000
@@ -149,7 +152,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerNode.physicsBody?.categoryBitMask = physicsCategory.playerCategory
         playerNode.physicsBody?.collisionBitMask = physicsCategory.goodEmojiCategory
         playerNode.physicsBody?.contactTestBitMask = physicsCategory.goodEmojiCategory
-        playerNode.physicsBody?.friction = 0.1
         playerNode.physicsBody?.isDynamic = false
         playerNode.physicsBody?.pinned = true
         playerNode.alpha = 0
@@ -174,25 +176,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         evilNode.physicsBody?.categoryBitMask = physicsCategory.evilCategory
         evilNode.physicsBody?.collisionBitMask = physicsCategory.goodCategory
         evilNode.physicsBody?.contactTestBitMask = physicsCategory.goodCategory
-        evilNode.physicsBody?.linearDamping = 0.5
-        evilNode.physicsBody?.friction = 0.1
         evilNode.physicsBody?.allowsRotation = false
-        evilNode.physicsBody?.restitution = 0.5
+        evilNode.physicsBody?.restitution = 0.3
         evilNode.alpha = 0
         evilNode.zPosition = -3
         evilNode.setScale(0)
+        evilNode.physicsBody?.allowsRotation = true
         
         evilEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         evilEmojiNode.position = evilNode.position
-        evilEmojiNode.lineWidth = 5
+        evilEmojiNode.lineWidth = 4
         evilEmojiNode.strokeColor = evilNodeColor
-        let evilEmojiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 5)
+        let evilEmojiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 3)
         evilEmojiBody.allowsRotation = false
         evilEmojiNode.physicsBody = evilEmojiBody
         evilEmojiNode.alpha = 0
         evilEmojiNode.setScale(0)
         evilEmojiNode.zPosition = -3
-        evilEmojiBody.restitution = 0.5
+        evilEmojiBody.restitution = 0.1
         
         evilEmojiNode.fillColor = .white
         evilEmojiNode.alpha = 0
@@ -232,9 +233,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         goodBody.categoryBitMask = physicsCategory.goodCategory
         goodBody.collisionBitMask = physicsCategory.evilCategory
         goodBody.contactTestBitMask = physicsCategory.evilCategory
-        goodBody.linearDamping = 0.5
-        goodBody.friction = 0.5
-        goodBody.restitution = 0.5
+        goodBody.restitution = 0.3
         goodBody.allowsRotation = false
         goodNode.physicsBody = goodBody
         goodNode.zPosition = -3
@@ -243,13 +242,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         goodEmojiNode = SKShapeNode(circleOfRadius: emojiNodeSize)
         goodEmojiNode.position = goodNode.position
-        goodEmojiNode.lineWidth = 5
+        goodEmojiNode.lineWidth = 4
+        goodEmojiNode.name = "goodEmojiNode"
         goodEmojiNode.strokeColor = goodNodeColor
         let goodEmodjiBody = SKPhysicsBody(circleOfRadius: emojiNodeSize + 3)
         goodEmodjiBody.categoryBitMask = physicsCategory.goodEmojiCategory
         goodEmodjiBody.collisionBitMask = physicsCategory.playerCategory
         goodEmodjiBody.contactTestBitMask = physicsCategory.playerCategory
         goodEmodjiBody.allowsRotation = false
+        goodEmodjiBody.restitution = 0.05
         goodEmojiNode.physicsBody = goodEmodjiBody
         goodEmojiNode.alpha = 0
         goodEmojiNode.setScale(0)
@@ -287,7 +288,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for touch in touches {
             let location = touch.location(in: self)
             let nodes = self.nodes(at: location)
-            
             for node in nodes {
                 if node == playerNode {
                     gameDelegate?.didTapPlayerNode()
@@ -297,24 +297,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if node.name == goodNode.name || node.name == goodEmojiNode.name {
                     movableNode = goodNode
                     ballStartX =  (movableNode?.position.x)! - location.x
-                    ballStartY = goodNode.position.y
-                    goodNode.physicsBody?.isDynamic  = false
-                    break
-                }
+                    ballStartY = goodNode.position.y      
+                    return
+                } 
             }
             gameDelegate?.didTapInEmptyPlace()
         }
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with _: UIEvent?) {
         if let touch = touches.first, movableNode != nil {
             let location = touch.location(in: self)
-             movableNode!.position = CGPoint(x: max(playerNode.frame.maxX + goodEmojiNode.frame.size.width / 2, location.x + ballStartX), y: goodNode.position.y)
+            let newPostion = CGPoint(
+                x: max(playerNode.frame.maxX + goodEmojiNode.frame.size.width / 2, location.x + ballStartX), 
+                y: goodNode.position.y)
+            let action = SKAction.move(to: newPostion, duration: 0.1)
+            goodNode.run(action)
         }
     }
     
     override  func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        goodNode.physicsBody?.isDynamic = true
         if let _ = touches.first, movableNode != nil {
             movableNode = nil
         }
@@ -323,6 +325,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let _ = touches.first {
             movableNode = nil
+        }
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.node!.name == "playerNode" && contact.bodyB.node!.name == "goodEmojiNode" {
+            print("contact")
         }
     }
 }
