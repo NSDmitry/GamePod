@@ -32,7 +32,7 @@ class NodeSizer {
         
         if score == 0 {
             angelWidth = defaultWidthForNode
-            evilWidth = (viewWidth - 5) * 1.25 
+            evilWidth = (viewWidth - 5) * 1.25
         }
         
         return (angelRadius: angelWidth / 2, evilRadius: evilWidth / 2)
